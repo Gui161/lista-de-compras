@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Compras</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin: 20px auto;
+            max-width: 1200px;
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 15px;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-pills .nav-link.active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .item-card {
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .item-card.comprado {
+            border-left-color: #28a745;
+            background-color: #f8f9fa;
+        }
+        
+        .badge {
+            border-radius: 10px;
+        }
+        
+        .total-card {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+        }
+        
+        .loading {
+            display: none;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .item-actions {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .item-card:hover .item-actions {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="main-container p-4">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h1 class="display-4 fw-bold text-primary">
+                    <i class="bi bi-cart-check-fill me-3"></i>
+                    Lista de Compras
+                </h1>
+                <p class="lead text-muted">Organize suas compras de forma inteligente</p>
+            </div>
+            
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-pills justify-content-center mb-4" id="mainTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="criar-tab" data-bs-toggle="pill" data-bs-target="#criar" type="button" role="tab">
+                        <i class="bi bi-plus-circle me-2"></i>Criar Lista
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="mercado-tab" data-bs-toggle="pill" data-bs-target="#mercado" type="button" role="tab">
+                        <i class="bi bi-shop me-2"></i>No Mercado
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- Tab Content -->
+            <div class="tab-content" id="mainTabsContent">
+                <!-- Tela de Criação da Lista -->
+                <div class="tab-pane fade show active" id="criar" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-plus-lg me-2"></i>Adicionar Item
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="formAdicionarItem">
+                                        <div class="mb-3">
+                                            <label for="nomeItem" class="form-label">Nome do Item</label>
+                                            <input type="text" class="form-control" id="nomeItem" placeholder="Ex: Leite integral" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="categoriaItem" class="form-label">Categoria</label>
+                                            <select class="form-select" id="categoriaItem" required>
+                                                <option value="">Selecione uma categoria</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="bi bi-plus-circle me-2"></i>Adicionar à Lista
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-list-ul me-2"></i>Minha Lista de Compras
+                                    </h5>
+                                    <button class="btn btn-outline-danger btn-sm" id="btnLimparLista">
+                                        <i class="bi bi-trash me-1"></i>Limpar Lista
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="listaItens" class="row">
+                                        <!-- Itens serão carregados aqui via JavaScript -->
+                                    </div>
+                                    <div id="listaVazia" class="text-center py-5" style="display: none;">
+                                        <i class="bi bi-cart-x display-1 text-muted"></i>
+                                        <p class="text-muted mt-3">Sua lista está vazia. Adicione alguns itens!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tela de Uso no Mercado -->
+                <div class="tab-pane fade" id="mercado" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-8 mb-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-cart-check me-2"></i>Itens para Comprar
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="itensMercado" class="row">
+                                        <!-- Itens para o mercado serão carregados aqui -->
+                                    </div>
+                                    <div id="mercadoVazio" class="text-center py-5" style="display: none;">
+                                        <i class="bi bi-cart-x display-1 text-muted"></i>
+                                        <p class="text-muted mt-3">Nenhum item na lista. Volte para "Criar Lista" e adicione alguns itens!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4">
+                            <div class="card total-card text-white">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-calculator me-2"></i>Resumo da Compra
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Itens comprados:</span>
+                                        <span id="itensComprados">0</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Total de itens:</span>
+                                        <span id="totalItens">0</span>
+                                    </div>
+                                    <hr class="my-3">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <strong>Total Geral:</strong>
+                                        <strong id="totalGeral">R$ 0,00</strong>
+                                    </div>
+                                    <div class="progress mb-3">
+                                        <div class="progress-bar bg-success" role="progressbar" id="progressoCompras" style="width: 0%"></div>
+                                    </div>
+                                    <small id="percentualComprado">0% concluído</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Spinner -->
+    <div class="loading position-fixed top-50 start-50 translate-middle">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript customizado -->
+    <script src="app.js"></script>
+</body>
+</html>
